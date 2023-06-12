@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Post;
+use App\Models\Technology;
+use App\Models\Type;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -26,6 +28,8 @@ class PostController extends Controller
      */
     public function create()
     {
+        $technologies = Technology::all();
+        $types = Type::all();
         return view('posts.create');
     }
 
@@ -63,8 +67,16 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        $form_data = $this->validation($request->all());
-        $post->update($form_data);
+        $data = $request->validated();
+        $data = Str::slug($request->title, '-');
+        $data = $slug;
+        if ($request->has('technologies')){
+            $post->technologies()->sync($request->technologies);
+        }
+        else{
+            $post->technologies()->sync([]);
+        }
+        $post->update($data);
         return redirect()->route('admin.posts.index', $post->id);
     }
 
@@ -76,7 +88,9 @@ class PostController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit(Post $post)
-    {
+    {   
+        $technologies = Technology::all();
+        $types = Type::all();
         return view('posts.edit', compact('post'));
     }
 
